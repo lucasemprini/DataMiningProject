@@ -1,0 +1,321 @@
+% !TeX root = ./report.tex
+% !TeX encoding = UTF-8 Unicode
+% !TeX spellcheck = it_IT
+% !TeX program = arara
+% !TeX options = --log --verbose --language=it "%DOC%"
+
+% arara: lualatex:      { interaction: batchmode }
+% arara: lualatex:      { interaction: nonstopmode, synctex: yes }
+
+\documentclass[a4paper,11pt,twoside,notitlepage,final]{scrartcl}
+
+\usepackage{fancyvrb}
+
+\begin{VerbatimOut}{\jobname.xmpdata}
+\Title{Flags Dataset Analysis}
+\Author{Luca Semprini}
+\Copyright{Questo documento è fornito sotto licenza Creative Commons Attribution-ShareAlike 4.0 International}
+\CopyrightURL{http://creativecommons.org/licenses/by-sa/4.0}
+\end{VerbatimOut}
+
+\usepackage[english,italian]{varioref}
+
+\usepackage[luatex,dvipsnames,table,xcdraw]{xcolor}
+\usepackage[a-1b]{pdfx}
+
+%% Font
+\usepackage{fontspec}
+\defaultfontfeatures{Ligatures=TeX}
+\setmainfont[SmallCapsFont={* Caps}]{Latin Modern Roman}
+\setsansfont{Latin Modern Sans}
+
+%% Matematica
+\usepackage{amsmath}
+\usepackage[math-style=ISO]{unicode-math}
+\setmathfont{Latin Modern Math}
+\usepackage[output-decimal-marker={,},binary-units]{siunitx}
+
+\defaultfontfeatures{} % reset per mono font
+\setmonofont{Latin Modern Mono}
+
+%% Lingue
+\usepackage[strict=true,autostyle=true,english=american,italian=guillemets]{csquotes}
+\usepackage{polyglossia}
+\setmainlanguage[babelshorthands]{italian}
+\setotherlanguage[variant=american]{english}
+
+%% Altri pacchetti
+\usepackage{graphicx}
+\graphicspath{{fig}}
+\usepackage{xargs}
+\usepackage[colorinlistoftodos,prependcaption,textsize=tiny]{todonotes}
+\newcommandx{\unsure}[2][1=]{\todo[linecolor=red,backgroundcolor=red!25,bordercolor=red,#1]{#2}}
+\newcommandx{\change}[2][1=]{\todo[linecolor=blue,backgroundcolor=blue!25,bordercolor=blue,#1]{#2}}
+\newcommandx{\info}[2][1=]{\todo[linecolor=OliveGreen,backgroundcolor=OliveGreen!25,bordercolor=OliveGreen,#1]{#2}}
+\newcommandx{\improvement}[2][1=]{\todo[linecolor=Plum,backgroundcolor=Plum!25,bordercolor=Plum,#1]{#2}}
+\newcommandx{\thiswillnotshow}[2][1=]{\todo[disable,#1]{#2}}
+\usepackage{subcaption}
+\usepackage{caption}
+\usepackage{scrhack}
+\usepackage{float}
+
+\usepackage{geometry}
+\geometry{a4paper,heightrounded}
+\usepackage{setspace}
+\onehalfspacing{}
+
+% \usepackage[maxcitenames=2,mincitenames=2,maxbibnames=99,minbibnames=99,style=ieee,giveninits=true,backend=biber]{biblatex}
+% \addbibresource{biblio.bib}
+
+% \usepackage[htt]{hyphenat}
+% \usepackage{enumerate}
+
+\usepackage{xurl}
+\usepackage{microtype}
+
+\hypersetup{%
+  pdfpagemode={UseNone},
+  hidelinks,
+  hypertexnames=false,
+  linktoc=all,
+  unicode=true,
+  pdftoolbar=false,
+  pdfmenubar=false,
+  plainpages=false,
+  breaklinks,
+  pdfstartview={Fit},
+  pdflang={it}
+}
+
+\usepackage[english,italian,nameinlink]{cleveref}
+
+\title{\LARGE{\textbf{Flags Dataset Analysis}}}
+
+\author{Luca~Semprini}
+
+\date{%
+  \small{Data Mining}\\%
+  \small{Anno accademico 2019--2020}
+}
+
+
+\begin{document}
+
+\maketitle
+
+\section{Introduzione}\label{sec:intro}
+
+Per la realizzazione dell'elaborato, si è scelto di condurre le operazioni di analisi e mining dei dati sul dataset chiamato \emph{Flags Data Set}\footnote{\url{http://archive.ics.uci.edu/ml/datasets/Flags}}, rimediato dal sito \emph{UCI Machine Learning}.
+In questa \nameCref{sec:intro} si procederà a presentare il dataset sul quale è stato svolto il lavoro.
+Si prenderà in considerazione dominio da qui il dataset proviene e la struttura dei dati in esso contenuti originariamente (prima di apportare eventuali pulizie, per poter essere in grado di estrarre conoscenza dai dati in questione)\todo[shadow]{Pulizie necessarie? Vedremo poi}.
+
+\subsection{Descrizione del dominio}\label{sec:intro:descrdom}
+
+Il dataset contiene dettagli (culturali, sociali, geografici e religiosi) di varie nazioni (in particolare 194) e le loro rispettive \textbf{bandiere}.
+Esso contiene dati collezionati principalmente dal paperback
+ ``\emph{Collins Gem Guide to Flag}'', pubblicato, appunto dall'editore ``\emph{Collins Gem}''.
+
+Si è pensato potesse essere interessante dedurre la religione di stato di una data nazione, basandosi su alcune caratteristiche della sua bandiera.
+Pare, infatti, che circa un terzo delle bandiere del mondo contengano simboli religiosi; inoltre, la zona geografica della nazione, la lingua nazionale, il continente e altre caratteristiche di questo tipo possono aiutare a classificare la religione nazionale.
+Un'altro aspetto interessante da considerare concerne i colori, le strisce e le barre verticali presenti sulla bandiera stessa.
+Si è quindi pensato di effettuare Data Mining in questo ambito, per riuscire a dedurre la religione di uno stato, partendo dalle caratteristiche riassunte brevemente poco sopra, in quanto si è ritenuto potesse essere una questione, appunto, interessante.
+
+
+\subsection{Descrizione del dataset}\label{sec:intro:descrdata}
+
+Il dataset preso in esame contiene dati di 194 nazioni e rispettive bandiere;
+la \textbf{religione} di queste nazioni può essere Cattolica, Altro tipo di Cristianesimo, Musulmana, Buddista, Indù, Etnica, Marxista, Altro.
+Questo tipo di informazione è correlata, all'interno del dataset, con altri dati di natura geografica, socio-culturale e demografica delle nazioni prese in esame, oltre che, ovviamente, i dati sulle rispettive bandiere.
+
+Il file \href{http://archive.ics.uci.edu/ml/machine-learning-databases/flags/flag.data}{\texttt{flags\_flag.data}}
+contiene l'intero dataset, costituito da linee comprendenti i record, con i vari attributi attributi separati da virgole.
+Al suo interno sono presenti, come accennato, \emph{194 istanze} composte di \emph{30 attributi}, che verranno descritti brevemente di seguito.
+Prima di descrivere i vari attributi, c'è da aggiungere che, all'interno della cartella contenente il dataset, è stato utilizzato un file
+\href{http://archive.ics.uci.edu/ml/machine-learning-databases/flags/flag.names}{\texttt{flags\_flag.names}} presente per studiare i nomi degli attributi.
+
+\begin{description}
+  \item[Name]
+    Attributo nominale che rappresenta il nome della nazione.
+    Consiste semplicemnente in una stringa, univoca per ogni istanza del dataset
+
+  \item[Landmass]
+    Attributo nominale che rappresenta il continente in cui la nazione risiede.
+    Può assumere 6 valori rappresentati da numeri da 1 a 6:
+    \begin{itemize}
+      \item \texttt{1}: \emph{Nord America}.
+      \item \texttt{2}: \emph{Sud America}.
+      \item \texttt{3}: \emph{Europa}.
+      \item \texttt{4}: \emph{Africa}.
+      \item \texttt{5}: \emph{Asia}.
+      \item \texttt{6}: \emph{Oceania}.
+    \end{itemize}
+
+  \item[Zona]
+    Attributo nominale che rappresenta il quadrante geografico in cui risiede la nazione, basato sul Meridiano di Greenwich e l'Equatore.
+    Dunque, questo attributo può assumere 4 valori, da 1 a 4:
+    \begin{itemize}
+      \item \texttt{1}: \emph{Nord-Est}.
+      \item \texttt{2}: \emph{Sud-Est}.
+      \item \texttt{3}: \emph{Sud-Ovest}.
+      \item \texttt{4}: \emph{Nord-Ovest}.
+    \end{itemize}
+
+  \item[Area]
+    Attributo numerico che rappresenta l'area della nazione, espressa in migliaia di kilometri quadrati.
+    \todo[shadow]{Aggiungere??}
+
+  \item[Popolazione]
+    Attributo numerico che rappresenta la popolazione della nazione, espressa in milioni di persone (valore arrotondato).
+
+  \item[Lingua]
+    Attributo nominale che rappresenta la lingua prevalente parlata nella nazione.
+    Sono rappresentate 10 lingue, con valori interi compresi nel range {1--10}.
+    \begin{itemize}
+      \item \texttt{1}: \emph{Inglese}.
+      \item \texttt{2}: \emph{Spagnolo}.
+      \item \texttt{3}: \emph{Francese}.
+      \item \texttt{4}: \emph{Tedesco}.
+      \item \texttt{5}: \emph{Slavo}.
+      \item \texttt{6}: \emph{Altre lingue Indo-Europee}.
+      \item \texttt{7}: \emph{Cinese}.
+      \item \texttt{8}: \emph{Arabo}.
+      \item \texttt{9}: \emph{Giapponese/Turco/Finlandese/Magiaro}.
+      \item \texttt{10}: \emph{Altre}.
+    \end{itemize}
+
+  \item[Religione]
+    Attributo nominale che rappresenta la religione principale praticata nella nazione.
+    Può assumere otto valori, in un range [0--7]:
+    \begin{itemize}
+      \item \texttt{0}: \emph{Cattolica}.
+      \item \texttt{1}: \emph{Altre religioni Cristiane}.
+      \item \texttt{2}: \emph{Musulmana}.
+      \item \texttt{3}: \emph{Buddista}.
+      \item \texttt{4}: \emph{Indù}.
+      \item \texttt{5}: \emph{Etnica}.
+      \item \texttt{6}: \emph{Marxista}.
+      \item \texttt{7}: \emph{Altre}.
+    \end{itemize}
+
+  \item[Barre]
+    Attributo numerico che rappresenta il numero di barre verticali presenti nella bandiera nazionale.
+
+  \item[Strisce]
+  Attributo numerico che rappresenta il numero di strisce orizzontali presenti nella bandiera nazionale.
+
+  \item[Colori]
+    Attributo numerico che rappresenta il numero di colori distinti presenti nella bandiera nazionale.
+    Questo tipo di caratteristica è approfondita in alcuni degli attributi successivi.
+
+  \item[Rosso; Verde; Blu; Oro (e Giallo); Bianco; Nero; Arancione]
+    Questi sette attributi sono binari e rappresentano la presenza o assenza del rispettivo colore: valore 0 se il colore è assente, 1 se è presente.
+
+  \item[Tonalità principale]
+    Attributo nominale che rappresenta il colore predominante della bandiera nazionale.
+    Se ci sono pareggi viene scelto la tonalità principale della parte alta della bandiera, se ciò fallisce viene scelta la tonalità centrale, infine, se fallisce anche questa scelta, si utilizza la tonalità principale della parte sinistra.
+    L'attributo assume valori interi nel range [0--8]:
+    \item \texttt{1}: \emph{Verde}.
+    \item \texttt{2}: \emph{Rosso}.
+    \item \texttt{3}: \emph{Blu}.
+    \item \texttt{4}: \emph{Oro o Giallo}.
+    \item \texttt{5}: \emph{Bianco}.
+    \item \texttt{6}: \emph{Arancione}.
+    \item \texttt{7}: \emph{Nero}.
+    \item \texttt{8}: \emph{Marrone}.
+
+  \item[Cerchi]
+    Attributo numerico che rappresenta il numero di cerchi presenti nella bandiera nazionale.
+
+  \item[Croci]
+  Attributo numerico che rappresenta il numero di croci (orizzontale-verticale) presenti nella bandiera nazionale.
+
+  \item[Saltires]
+    Attributo numerico che rappresenta il numero di croci (diagonali) presenti nella bandiera nazionale.
+
+  \item[Quarti]
+    Attributo numerico che rappresenta il numero di quarti (sezioni) nella bandiera nazionale.
+
+  \item[Sunstars]
+    Attributo numerico che rappresenta il numero di simboli rappresentanti il Sole o stelle presenti nella bandiera nazionale.
+
+  \item[Crescent]
+    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un simbolo rappresentante una luna crescente, 0 se non è presente.
+
+  \item[Triangolo]
+    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente qualche simbolo di un triangolo, 0 se non è presente.
+
+  \item[Icon]
+    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un'immagine rappresentante un oggetto inanimato, 0 se non è presente.
+
+  \item[Animate]
+    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un simbolo rappresentante un essere vivente o una parte di esso, 0 se non è presente.
+
+  \item[Testo]
+    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente una qualche lettera o scritta, 0 se non è presente.
+
+  \item[Topleft]
+    Attributo nominale che indica, con una stringa, il colore presente nell'angolo in alto a sinistra della bandiera nazionale (in caso di pareggi ci si sposta a destra).
+
+  \item[Botright]
+    Attributo nominale che indica, con una stringa, il colore presente nell'angolo in basso a destra della bandiera nazionale (in caso di pareggi ci si sposta a sinistra).
+\end{description}
+
+L'attributo scelto come classe per effettuare l'analisi del dataset è, come anticipato, l'attributo \textbf{Religione}.
+Il problema delineato è dunque affrontabile come un quesito di classificazione n-aria (in particolare n = 8 in questo caso):
+si deve infatti poter costruire un modello che, dati certi parametri per gli attributi presi in causa, permetta di prevedere quale delle otto religioni disponibili risulti come religione di Stato della nazione.
+
+
+\section{Preprocessing dei dati}
+
+In questa sezione vengono descritte le trasformazioni apportate ai dati,al fine di migliorarne la leggibilità, la trasparenza e la qualità.
+Non è stato ritenuto necessario, innanzitutto, aggregare attributi, in quanto risultano tutti abbastanza eterogenei ed indipendenti, ad esclusione di quelli relativi ai colori;
+in merito a questi ultimi, è stato ritenuto interessante mantenere gli attributi relativi ad ogni colore, in quanto quest'ultima caratteristica potrebbe influenzare la deduzione finale.
+
+\todo[shadow]{ELIMINARE ATTRIBUTI??}
+
+\subsection{Importazione in Weka}
+
+Innanzitutto c'è da precisare che tutte le analisi sui dati sono state effettuate tramite il software Weka\footnote{\url{https://www.cs.waikato.ac.nz/ml/weka/}}.
+
+Il file, come anticipato nella \Vref{subsec:intro:descrdata}, il dataset originario era di fatto un file con estensione \texttt{.data} in cui non era presente alcuna linea di \emph{header}.
+Purtroppo, forzando l'import del file come data file senza apportare alcuna modifica non ha portato risultati, anche mettendo a \texttt{true} il flag \texttt{noHeaderRowPresent};
+si è dunque pensato ad aggiungere manualmente in testa al file una linea di \emph{header}, con i nomi delle colonne, presi dal file \texttt{flags\_flag.names}, in cui venivano descritti i vari attributi.
+Questa operazione ha risolto il problema dell'intestazione mancante.
+
+Si è inoltre ritenuto opportuno convertire il formato del file \texttt{flags\_flag.data} in uno più congeniale al software Weka; si è innanzitutto convertito il file in formato CSV
+, per poi importarlo su Weka e, tramite lo strumento \emph{ArffViewer}, si è creato un file \texttt{flags\_flagsarff.arff}.
+
+Ispezionando i dati importati, risulta subito evidente che Weka non ha compreso automaticamente la natura dei dati:
+quasi tutti gli attributi che dovrebbero essere \emph{nominali} o \emph{binari}, avendo valori composti da numeri, vengono invece considerati \emph{numerici}; l'eccezione
+è rappresentata dagli attributi \textbf{Name}, \textbf{Topleft}, \textbf{Botrigt}, che risultano già come nominali.
+Per tutti gli altri nominali composti da numeri, si è dunque proceduto applicando il filtro \texttt{NumericToNominal}
+per trasformare gli attributi, in particolare per quelli in posizione 2, 3, 6, 7, 18, 29 e 30. Si è scelto
+infine di mantenere gli attributi binari come originali, in quanto il contenuto informativo non risultava alterato o sporcato.
+
+\subsection{Pulizia}
+
+In questa fase si è proceduto a controllare attentamente il dataset per rilevare eventuali problemi legati ai dati e provare a gestirli.
+Fortunatamente, il check manuale ha confermato quanto si poteva comprendere anche dalla tabella descrittiva riportata sul file \texttt{flags\_flag.names}:
+il dataset risulta privo di record duplicati e di attributi mancanti; non è stato dunque necessario pulire ulteriormente il dataset oltre ai filtri applicati per la corretta importazione in Weka.
+
+\subsection{Normalizzazione}
+
+Oltre le limitate trasformazioni necessario alla corretta importazione dei dati, l'unica trasformazione applicata è stata la \emph{normalizzazione},
+per rendere i range dei vari attributi omogenei tra di loro.
+
+\todo[inline]{Spiegare meglio}
+
+Non è stato necessario applicare \unsure{Serve specificarlo?} alcuna tecnica di campionamento o selezione degli attributi.
+
+\section{Analisi dei dati e classificatori utilizzati}
+\subsection{kNN}
+\subsection{Decision Tree}
+\subsection{Classificatori Bayesiani}
+\subsection{Classificatori Lazy}
+\subsection{Multi-Classificatori}
+\subsubsection{Approccio Cost-Sensitive}
+\subsubsection{Approccio Boosting}
+\subsection{Rules}
+
+
+\end{document}
