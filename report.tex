@@ -470,6 +470,22 @@ La distribuzione delle istanze di questo attributo, come per l'attributo precede
   \label{fig:botright}
 \end{figure}
 
+\subsection{Misure di performance dei classificatori}
+
+Prima di partire con le analisi, occorre stabilire i criteri di misura delle performance dei vari classificatori:
+a tale scopo si è considerato in primo luogo la \emph{Confusion Matrix} prodotta da ogni modello, oltre ai valori di \emph{precision} e \emph{recall} per le classi in gioco, attribuendo un maggiore peso ai valori relativi alle classi con meno istanze e infine del valore della \emph{ROC}\@.
+
+Come modalità di test, si è scelto di applicare \emph{k-Fold Cross-Validation} piuttosto che lo splitting statico dei dati in training set e test set, poiché pensato appositamente per dataset di piccole dimensioni come quello preso in esame.
+
+
+\subsection{Decision Tree}\label{subsec:tree}
+
+Il primo approccio di classificazione intrapreso è stato il \textbf{Decision Tree}.
+In particolare, si è scelto di usare \texttt{J48}, implementazione dell'algoritmo \emph{C4.5} presente all'interno del software \emph{Weka};
+esso realizza un albero binario a cui possono essere applicate tecniche di \emph{post pruning}
+per ridurre le dimensioni dell'albero e l'errore commesso dal classificatore.
+
+
 \subsection{kNN}
 \subsection{Decision Tree}
 \subsection{Classificatori Bayesiani}
