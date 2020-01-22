@@ -109,7 +109,7 @@ Per la realizzazione dell'elaborato, si è scelto di condurre le operazioni di a
 In questa \nameCref{sec:intro} si procederà a presentare il dataset sul quale è stato svolto il lavoro.
 Si prenderà in considerazione dominio da qui il dataset proviene e la struttura dei dati in esso contenuti originariamente (prima di apportare eventuali pulizie, per poter essere in grado di estrarre conoscenza dai dati in questione)\todo[shadow]{Pulizie necessarie? Vedremo poi}.
 
-\subsection{Descrizione del dominio}\label{sec:intro:descrdom}
+\subsection{Descrizione del dominio}\label{subsec:intro:descrdom}
 
 Il dataset contiene dettagli (culturali, sociali, geografici e religiosi) di varie nazioni (in particolare 194) e le loro rispettive \textbf{bandiere}.
 Esso contiene dati collezionati principalmente dal paperback
@@ -121,7 +121,7 @@ Un'altro aspetto interessante da considerare concerne i colori, le strisce e le 
 Si è quindi pensato di effettuare Data Mining in questo ambito, per riuscire a dedurre la religione di uno stato, partendo dalle caratteristiche riassunte brevemente poco sopra, in quanto si è ritenuto potesse essere una questione, appunto, interessante.
 
 
-\subsection{Descrizione del dataset}\label{sec:intro:descrdata}
+\subsection{Descrizione del dataset}\label{subsec:intro:descrdata}
 
 Il dataset preso in esame contiene dati di 194 nazioni e rispettive bandiere;
 la \textbf{religione} di queste nazioni può essere Cattolica, Altro tipo di Cristianesimo, Musulmana, Buddista, Indù, Etnica, Marxista, Altro.
@@ -239,19 +239,19 @@ Prima di descrivere i vari attributi, c'è da aggiungere che, all'interno della 
     Attributo numerico che rappresenta il numero di simboli rappresentanti il Sole o stelle presenti nella bandiera nazionale.
 
   \item[Crescent]
-    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un simbolo rappresentante una luna crescente, 0 se non è presente.
+    Attributo binario, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un simbolo rappresentante una luna crescente, 0 se non è presente.
 
   \item[Triangolo]
-    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente qualche simbolo di un triangolo, 0 se non è presente.
+    Attributo binario, il suo valore sarà 1 se all'interno della bandiera nazionale è presente qualche simbolo di un triangolo, 0 se non è presente.
 
   \item[Icon]
-    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un'immagine rappresentante un oggetto inanimato, 0 se non è presente.
+    Attributo binario, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un'immagine rappresentante un oggetto inanimato, 0 se non è presente.
 
   \item[Animate]
-    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un simbolo rappresentante un essere vivente o una parte di esso, 0 se non è presente.
+    Attributo binario, il suo valore sarà 1 se all'interno della bandiera nazionale è presente un simbolo rappresentante un essere vivente o una parte di esso, 0 se non è presente.
 
   \item[Testo]
-    Attributo booleano, il suo valore sarà 1 se all'interno della bandiera nazionale è presente una qualche lettera o scritta, 0 se non è presente.
+    Attributo binario, il suo valore sarà 1 se all'interno della bandiera nazionale è presente una qualche lettera o scritta, 0 se non è presente.
 
   \item[Topleft]
     Attributo nominale che indica, con una stringa, il colore presente nell'angolo in alto a sinistra della bandiera nazionale (in caso di pareggi ci si sposta a destra).
@@ -270,8 +270,10 @@ si deve infatti poter costruire un modello che, dati certi parametri per gli att
 In questa sezione vengono descritte le trasformazioni apportate ai dati,al fine di migliorarne la leggibilità, la trasparenza e la qualità.
 Non è stato ritenuto necessario, innanzitutto, aggregare attributi, in quanto risultano tutti abbastanza eterogenei ed indipendenti, ad esclusione di quelli relativi ai colori;
 in merito a questi ultimi, è stato ritenuto interessante mantenere gli attributi relativi ad ogni colore, in quanto quest'ultima caratteristica potrebbe influenzare la deduzione finale.
-
-\todo[shadow]{ELIMINARE ATTRIBUTI??}
+Si è ritenuto, inoltre, opportuno eliminare diversi attributi, a seguito di una approfondita analisi delle istanze e degli attributi stessi.
+L'attributo \textbf{Nome} è stato eliminato in quanto unico per ogni istanza nel dataset, e quindi inutile; sono stati individuati anche attributi molto mal distribuiti nelle varie istanze,
+e si è dunque ritenuto necessario eliminarli: si tratta degli attributi \textbf{Area}, \textbf{Popolazione}, \textbf{Barre}, \textbf{Strisce}, \textbf{Cerchi}, \textbf{Triangoli}, \textbf{Icon}, \textbf{Animate} e \textbf{Testo}.
+Infine, per quanto riguarda i colori è stata fatta la considerazione di rimuovere gli attributi binari relativi ai singoli colori presenti, mantenendo solo \textbf{Tonalità principale} e numero di \textbf{Colori}.
 
 \subsection{Importazione in Weka}
 
@@ -289,25 +291,185 @@ Ispezionando i dati importati, risulta subito evidente che Weka non ha compreso 
 quasi tutti gli attributi che dovrebbero essere \emph{nominali} o \emph{binari}, avendo valori composti da numeri, vengono invece considerati \emph{numerici}; l'eccezione
 è rappresentata dagli attributi \textbf{Name}, \textbf{Topleft}, \textbf{Botrigt}, che risultano già come nominali.
 Per tutti gli altri nominali composti da numeri, si è dunque proceduto applicando il filtro \texttt{NumericToNominal}
-per trasformare gli attributi, in particolare per quelli in posizione 2, 3, 6, 7, 18, 29 e 30. Si è scelto
-infine di mantenere gli attributi binari come originali, in quanto il contenuto informativo non risultava alterato o sporcato.
+per trasformare gli attributi. Per rendere gli attributi binari
+effettivamente tali si è successivamente proceduto ad applicare il filtro \texttt{NumericToBinary}
+(nonostante Weka li riconosca, in maniera intelligente, come nominali); l'aggiunta di quest'ultimo
+filtro ha comportato una questione ulteriore: esso, infatti, rinomina gli attributi modificati aggiungendo
+``\texttt{\_binarized}'', questi suffissi sono stati rimossi tramite filtro \texttt{RenameAttribute}
+passando la regex \verb|([\s\S]+)_binarized|.
 
 \subsection{Pulizia}
 
-In questa fase si è proceduto a controllare attentamente il dataset per rilevare eventuali problemi legati ai dati e provare a gestirli.
-Fortunatamente, il check manuale ha confermato quanto si poteva comprendere anche dalla tabella descrittiva riportata sul file \texttt{flags\_flag.names}:
-il dataset risulta privo di record duplicati e di attributi mancanti; non è stato dunque necessario pulire ulteriormente il dataset oltre ai filtri applicati per la corretta importazione in Weka.
+In questa fase si è controllato manualmente il dataset al fine di rilevare eventuali problemi con i dati e provare a gestirli.
+Fortunatamente, questo check ha confermato le impressioni date dalla lettura della descrizione del dataset presente
+nel file \texttt{flags\_flag.names} già citato, ovvero che il dataset non necessitasse di alcun tipo di pulizia, in quanto
+non sono stati riscontrati record duplicati o mancanti.
 
 \subsection{Normalizzazione}
-
-Oltre le limitate trasformazioni necessario alla corretta importazione dei dati, l'unica trasformazione applicata è stata la \emph{normalizzazione},
-per rendere i range dei vari attributi omogenei tra di loro.
-
-\todo[inline]{Spiegare meglio}
-
-Non è stato necessario applicare \unsure{Serve specificarlo?} alcuna tecnica di campionamento o selezione degli attributi.
+\todo[shadow]{Normalizzazione fatta?}
 
 \section{Analisi dei dati e classificatori utilizzati}
+
+In questa sezione verrà riportato lo studio effettuato sul dataset.
+Ogni sottosezione tratterà di uno specifico classificatore, dei suoi risultati e degli esperimenti fatti per migliorarne il modello.
+
+\subsection{Considerazioni sugli attributi}
+
+Studiando la composizione dei dati per selezionare le principali tecniche da applicare,
+la prima cosa che risulta visibile all'apertura del dataset è sicuramente il suo sbilanciamento nelle classi di output:
+come mostrato in~\Cref{fig:classes}, le prime tre religioni, in ordine, risultano le più
+presenti nel dataset con 136 istanze complessive su 194, evidenziando sin da subito uno sbilanciamento;
+in particolare, circa un terzo delle nazioni presenti nel dataset risulta di fede cristiana non cattolica.
+Le religioni meno presenti risultano essere quella buddista, indù e quella classificata come ``altro'', con solo
+16 istanze totali.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-religion.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo utilizzato come classe:
+    la colonna blu rappresenta la religione cattolica,
+    quella rossa le religioni cristiane non cattoliche, quella azzurra il musulmanesimo,
+    quella grigia la fede buddista, quella rosa la religione indù, quella verde la religione
+    definita etnica, quella gialla il marxismo, ed infine la colonna viola rappresenta le altre religioni.
+  }%
+  \label{fig:classes}
+\end{figure}
+
+Molto interessante l'attributo \textbf{Continente}, in quanto la distribuzione delle istanze delle classi risulta particolare:
+si nota, infatti, dalla~\Cref{fig:landmass} come il continente 4 (ovvero l'\emph{Africa}) contenga quasi tutte le istanze della religione cosiddetta etnica;
+o ancora, si può vedere come la religione musulmana risulta presente quasi esclusivamente nei continenti 4 e 5 (ovvero \emph{Africa} e \emph{Asia});
+altra informazione interessante riguarda la fede marxista, presente quasi esclusivamente in \emph{Europa} e \emph{Asia} (colonne 3 e 5), con una piccola presenza in \emph{Nord America} (colonna 1).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-landmass.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Continente}
+    all'interno del dataset: le colonne, nell'ordine rappresentano i 6 continenti, rispettivamente,
+    Nord America, Sud America, Europa, Africa, Asia ed Oceania.
+    }%
+  \label{fig:landmass}
+\end{figure}
+
+L'attributo \textbf{Zona}, risulta ben distribuito con distribuzioni interessanti delle istanze delle classi.
+Nel Sud-OVest (terza colonna), ad esempio, sono presenti poche nazioni, ma tutte con religione Cristiana e Cattolica;
+interessante anche la distribuzione delle istanze con religione musulmana: quasi solo nel Nord-Est;
+quest'ultima zona comprende quasi esclusivamente le nazioni con fede marxista (probabilmente in quanto Europa ed Asia sono continenti che occupano la stragrande maggioranza del quadrante ad Est del meridiano di Greenwich e a Nord dell'Equatore).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-zone.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Zona}
+    all'interno del dataset: le colonne, nell'ordine rappresentano i 4 quadranti del mondo, rispettivamente,
+    Nord-Est, Sud-Est, Sud-Ovest, Nord-Ovest.
+    }%
+  \label{fig:zone}
+\end{figure}
+
+L'attributo \textbf{Lingua} appare molto interessante, in quanto le istanze della classe sono distribuite in maniera particolare.
+Salta all'occhio immediatamente che tutte le 4 nazioni di lingua slava (colonna 5) hanno come fede la religione marxista;
+ancora più interessante è la colonna riguardante i paesi di lingua araba (colonna 8): 19 istanze, tutte con religione musulmana;
+le 21 istanze di lingua spagnola (colonna 2) sono quasi in totalità di religione cattolica.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-language.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Lingua}
+    all'interno del dataset: le colonne, nell'ordine rappresentano le dieci lingue codificate dal dataset, rispettivamente,
+    inglese, spagnolo, francese, tedesco, slavo, altre lingue indo-europee, cinese, arabo, giapponese/turco/finlandese/magiaro, altre lingue.
+    }%
+  \label{fig:language}
+\end{figure}
+
+L'attributo rappresentante il numero di \textbf{Colori} nella bandiera nazionale appare distribuito in maniera abbastanza intuitiva.
+Le nazioni con bandiere contenenti dai due ai quattro colori sono la stragrande maggioranza, con dei picchi al ribasso di una nazione per entrambi gli estremi: un colore e otto colori.
+La distribuzione delle istanze della classe, in questo caso, non risulta ricca di informazioni di primo impatto: unica nota di rilievo consiste nelle nazioni con elevato numero di colori nella bandiera;
+queste ultime infatti (ultime quattro colonne, quindi con numero di colori da cinque a otto) sono per grande maggioranza nazioni cristiane non cattoliche.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-colours.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Colori}
+    all'interno del dataset: le colonne, rappresentano il quantitativo di colori presenti nella bandiera di ogni nazione, andando da uno a otto.
+    }%
+  \label{fig:colours}
+\end{figure}
+
+Come si può vedere dalla~\Cref{fig:mainhue}, l'attributo \textbf{Tonalità principale} (in relazione ai colori della bandiera) ha una distribuzione sbilanciata sui primi cinque colori,
+ovvero verde, rosso, blu, giallo e bianco. In particolare, la stragrande maggioranza delle nazioni di fede musulmana hanno come tonalità principale il verde o il rosso; altra cosa interessante riguarda la fede marxista:
+la maggioranza delle nazioni con questa reigione hanno come tonalità principale della bandiera il rosso.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-mainhue.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Tonalità principale}
+    all'interno del dataset: le colonne, rappresentano, nell'ordine, le tonalità principali assunte dalla bandiera nazionale, rispettivamente
+    verde, rosso, blu, oro (o giallo), bianco, arancio, nero e marrone.
+    }%
+  \label{fig:mainhue}
+\end{figure}
+
+La~\Cref{fig:saltires} esprime la distribuzione dell'attributo \textbf{Saltires} (che indica la presenza di croci diagonali nella bandiera).
+Questo attributo binario ha uno sbilanciamento verso il valore 0 (ovvero assenza di croci diagonali), ma si può notare come quasi tutte le 18 nazioni con
+una croce diagonale nella bandiera sono di religione cristiana non cattolica.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-saltires.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Saltires}
+    all'interno del dataset: attributo binario, che esprime assenza (prima colonna) o presenza (seconda colonna) di croci diagonali nella bandiera della nazione.
+    }%
+  \label{fig:saltires}
+\end{figure}
+
+La~\Cref{fig:crescent} esprime la distribuzione dell'attributo \textbf{Crescent} (che indica la presenza di figure rappresentanti una luna crescente nella bandiera).
+Questo attributo binario ha uno sbilanciamento verso il valore 0 (ovvero assenza di lune crescenti), ma si può notare come quasi tutte le 11 nazioni con
+una luna crescente nella bandiera sono di religione musulmana.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-crescent.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Crescent}
+    all'interno del dataset: attributo binario, che esprime assenza (prima colonna) o presenza (seconda colonna) di lune crescenti nella bandiera della nazione.
+    }%
+  \label{fig:crescent}
+\end{figure}
+
+La~\Cref{fig:topleft} esprime la distribuzione dell'attributo \textbf{Topleft} (che indica la tonalità di colore presente nell'angolo in alto a sinistra della bandiera).
+La distribuzione delle istanze di questo attributo è sbilanciata per quattro colori (rosso, verde, blu e bianco) corrispondenti alle colonne da due a cinque comprese; gli altri colori contano solo ventidue istanze in totale.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-topleft.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Topleft}
+    all'interno del dataset: attributo nominale, che indica la tonalità di colore presente nell'angolo in alto a sinistra della bandiera della nazione;
+    i colori sono, nell'ordine raffigurato, nero, rosso, verde, blu, bianco, arancio e oro (o giallo).
+    }%
+  \label{fig:topleft}
+\end{figure}
+
+La~\Cref{fig:botright} esprime la distribuzione dell'attributo \textbf{Botright} (che indica la tonalità di colore presente nell'angolo in basso a destra della bandiera).
+La distribuzione delle istanze di questo attributo, come per l'attributo precedente, è sbilanciata per quattro colori (rosso, verde, blu e bianco, anche se con meno rilevanza in quest'ultimo) corrispondenti alle colonne da due a cinque comprese; gli altri colori contano solo ventidue istanze in totale.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/religion-botright.jpg}%
+  \caption{%
+    L'istogramma rappresenta i valori assunti dall'attributo \textbf{Botright}
+    all'interno del dataset: attributo nominale, che indica la tonalità di colore presente nell'angolo in basso a destra della bandiera della nazione;
+    i colori sono, nell'ordine raffigurato, verde, rosso, bianco, nero, blu, oro (o giallo), arancio e marrone.
+    }%
+  \label{fig:botright}
+\end{figure}
+
 \subsection{kNN}
 \subsection{Decision Tree}
 \subsection{Classificatori Bayesiani}
