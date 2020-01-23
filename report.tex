@@ -487,7 +487,7 @@ per ridurre le dimensioni dell'albero e l'errore commesso dal classificatore.
 
 \begin{figure}[H]
   \centering
-  \adjincludegraphics[width=\linewidth,trim=0 {.04\height} 0 {.3\height},clip]{fig/DecisionTree1.PNG}%
+  \includegraphics[width=0.75\textwidth]{fig/DecisionTree1.PNG}%
   \caption{Output di \texttt{J48} eseguito tramite Weka}%
   \label{fig:j48}
 \end{figure}
@@ -511,32 +511,96 @@ a scapito di due istanze classificate non correttamente nel complesso, come è p
 
 \begin{figure}[H]
   \centering
-  \adjincludegraphics[width=\linewidth,trim=0 {.04\height} 0 {.3\height},clip]{fig/DecisionTree2.PNG}%
+  \includegraphics[width=0.75\textwidth]{fig/DecisionTree2.PNG}%
   \caption{Albero di classificazione e output ottenuti con \texttt{J48} \emph{unpruned}}%
   \label{fig:j48}
 \end{figure}
 
-\todo[shadow]{Fino a qui}
-
-Il risultato del classificatore è sicuramente migliore rispetto alla sua versione \emph{pruned}, tuttavia rimane ancora abbastanza insoddisfacente.
+Il risultato del classificatore non risulta migliore rispetto alla sua versione \emph{pruned}, tuttavia consente di classificare meglio quelle classi con poche istanze,
+a scapito, appunto, delle classi più popolate, rendendo complessivamente meno performante la classificazione (anche se di poco).
 
 Sperimentando ulteriormente con la versione \emph{unpruned} di \texttt{J48},
-abbassando il numero minimo di elementi per foglia a \(1\) il valore di \emph{recall} per la classe \texttt{O} e di \emph{True Positive} si alzava,
-ma il valore di \emph{ROC} e \emph{precision} si abbassavano.
+abbassando il numero minimo di elementi per foglia a \(1\) il valore di \emph{recall} per la classe \texttt{Altre} e di \emph{True Positive} si alzava,
+ma il valore di \emph{ROC} e \emph{precision} si abbassavano, anche se di molto poco; ma i corrispondenti valori per le altre classi peggioravano.
 
-Si può dunque concludere che il classificatore \texttt{J48} non garantisce risultati ottimali sopra questo dataset, soprattutto a causa del grande sbilanciamento tra le distribuzioni delle classi.
+Cercando di alzare il numero minimo di elementi per foglia, continuavano a ottenersi risultati ancora peggiori.
 
-Disabilitando il post pruning e abbassando il numero minimo di elementi per foglia a \(1\), si può classificare correttamente poco meno della metà degli elementi appartenente a \texttt{O},
-classe più difficile da individuare ma allo stesso tempo più rilevante rispetto al dominio dei dati del sistema.
+Si può dunque concludere che il classificatore \texttt{J48} non garantisce risultati ottimali su questo dataset, soprattutto a causa del grande sbilanciamento tra le distribuzioni delle classi.
 
-\subsection{kNN}
-\subsection{Decision Tree}
-\subsection{Classificatori Bayesiani}
-\subsection{Classificatori Lazy}
+\subsection{Classificatori Bayesiani: \emph{Naïve Bayes}}\label{subsec:bayes}
+
+Per tentare un approccio differente, ho provato a costruire un modello basato sui classificatori bayesiani,
+approccio che ignora le relazioni tra gli attributi in favore della frequenza di certi valori rispetto alle classi in gioco.
+
+Il classificatore specifico scelto per il dataset è stato \emph{Naïve Bayes} nella sua implementazione fornita da Weka (chiamata appunto \texttt{NaiveBayes});
+costruendo il modello utilizzando i parametri standard impostati dalla workbench, sono stati ottenuti i risultati mostrati in~\Cref{fig:bayes}.
+
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/bayes.PNG}%
+  \caption{Output di \texttt{NaiveBayes} eseguito tramite Weka}%
+  \label{fig:bayes}
+\end{figure}
+
+Analizzando i risultati di questo classificatore, si possono fare alcune considerazioni:
+partendo dall'osservazione della \emph{confusion matrix} è possibile vedere come tutte le classi con il maggior numero di istanze (``\texttt{Cattolica}'', ``\texttt{Cristiana non cattolica}'', ``\texttt{Musulmana}'', ``\texttt{Etnica}'')
+vengono classificate con errori relativamente bassi, mentre la classificazione per le altre risulta molto meno affidabile; nel complesso, la classificazione non mostra risultati troppo differenti da quella eseguita utilizzando il modello ad Albero Decisionale.
+
+Solo la classe ``\texttt{Indù}'' mostra valori di \emph{precision} e \emph{recall} pari a \(0\), ma anche le altre classi con poche istanze presentano valori di questo tipo molto bassi, pur non arrivando a \(0\).
+
+Infine, osservando \emph{ROC} si ha la conferma definitiva che il modello costruito sia poco performante per questo tipo di classi.
+
+Le ragioni dietro alla poca efficienza del modello bayesiano per questo problema possono essere ricondotte alla mancanza dei valori di distribuzione delle probabilità reali per le classi e alla potenziale mancanza di indipendenza statistica tra attributi.
+Questi fattori, combinati allo sbilanciamento dei dati nel dataset, da cui vengono estratte le distribuzioni di probabilità necessarie al classificatore in mancanza di quelle reali, rendono inefficace il modello bayesiano su questo dataset.
+
+\subsection{Classificatori Lazy: \emph{k-NN}}\label{subsec:ibk}
+
+Altra famiglia utilizzata è stata quella dei \emph{classificatori Instance-based} o \emph{Lazy}.
+La particolarità di queste tecniche è la totale assenza di modello, sostituito da procedure di natura induttiva.
+
+Tra tutti i classificatori disponibili in questa famiglia, si è scelto di utilizzare \texttt{IBk}, implementazione in Weka dell'algoritmo \emph{k-NN};
+per questo classificatore è possibile impostare diversi parametri, come il numero di vicini da considerare e la metrica da utilizzare nel calcolo della distanza.
+
+\subsubsection{Utilizzando gli attributi nominali come tali}\label{subsub:ibk:nominal}
+
+Applicando i parametri default di Weka, ovvero con parametro \texttt{KNN=1} e \emph{distanza euclidea}, si ottengono i risultati riportati in~\Cref{fig:ibk:1}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/kNN1.PNG}%
+  \caption{Output di \texttt{IBk} eseguito tramite Weka}%
+  \label{fig:ibk:1}
+\end{figure}
+
+I risultati ottenuti da questo modello risultano particolarmente cattivi per le classi con maggior numero di istanze, notevolmente peggiori di quelli ottenuti utilizzando i modelli precedenti.
+Si riscontrano, in questo caso, valori di \emph{precision} e \emph{recall} pari a \(0\) solo per la classe \texttt{Indù}.
+Si è ritenuto dunque di poter migliorare il modello utilizzando valori differenti per i parametri sopra descritti.
+
+Mantenendo la \emph{distanza euclidea} come metrica, si è provato a variare il valore di K tra i numeri dispari compresi tra \(3\) e \(11\);
+questa modifica ha portato migliorie (seppur molto leggere), per le classi con molte istanze, solamente con \texttt{KNN=3} e \texttt{KNN=5}.
+Ma il risultato non è stato ritenuto comunque accettabile considerando i valori ottenuti in \emph{precision} e \emph{recall} e la percentuale di istanze correttamente e incorrettamente classificate.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/kNN3.PNG}%
+  \caption{Output di \texttt{IBk} con \texttt{KNN=3}}%
+  \label{fig:ibk:9}
+\end{figure}
+
+Si è pensato, infine, di \textbf{pesare} le distanze calcolate dall'algoritmo, in quanto con un numero così elevato di classi rispetto al numero relativamente esiguo di record del dataset, avrebbe potuto aiutare un algoritmo basato sulla distanza come il \texttt{kNN}.
+Settando propriamente il parametro \texttt{distanceWeighting} all'interno dell'interfaccia \emph{Weka}, le distanze sono state pesate come ``\texttt{1--distance}''.
+
+I risultati così ottenuti risultano più soddisfacenti per i valori \emph{ROC}, mantenendo inalterato il valore \texttt{KNN=3}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/kNNWeighted.PNG}%
+  \caption{Output di \texttt{IBk} con \texttt{KNN=3} e la distanza pesata come \texttt{1--distance}}%
+  \label{fig:ibk:9}
+\end{figure}
+
 \subsection{Multi-Classificatori}
-\subsubsection{Approccio Cost-Sensitive}
-\subsubsection{Approccio Boosting}
-\subsection{Rules}
-
+\todo[shadow]{Arrivato qui}
 
 \end{document}
