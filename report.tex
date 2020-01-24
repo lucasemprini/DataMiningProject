@@ -562,8 +562,6 @@ La particolarità di queste tecniche è la totale assenza di modello, sostituito
 Tra tutti i classificatori disponibili in questa famiglia, si è scelto di utilizzare \texttt{IBk}, implementazione in Weka dell'algoritmo \emph{k-NN};
 per questo classificatore è possibile impostare diversi parametri, come il numero di vicini da considerare e la metrica da utilizzare nel calcolo della distanza.
 
-\subsubsection{Utilizzando gli attributi nominali come tali}\label{subsub:ibk:nominal}
-
 Applicando i parametri default di Weka, ovvero con parametro \texttt{KNN=1} e \emph{distanza euclidea}, si ottengono i risultati riportati in~\Cref{fig:ibk:1}.
 
 \begin{figure}[H]
@@ -601,6 +599,95 @@ I risultati così ottenuti risultano più soddisfacenti per i valori \emph{ROC},
 \end{figure}
 
 \subsection{Multi-Classificatori}
-\todo[shadow]{Arrivato qui}
+
+I classificatori precedentemente descritti non hanno portato a un modello particolarmente efficace;
+si è dunque deciso di provare ad utilizzare modelli a multi-classificatori.
+Tali classificatori sono infatti noti per essere particolarmente efficaci per problemi in cui classificatori singoli faticano a raggiungere performance accettabili.
+
+Tra le varie possibilità messe a disposizione da Weka, si è scelto di utilizzare due diversi algoritmi:
+\emph{Cost-Sensitive Classifier}, modello che permette di gestire dataset sbilanciati in partenza per distribuzioni delle classi e \emph{Adaboost}, classificatore appartenente alla famiglia delle tecniche di \emph{Boosting}.
+
+\subsubsection{Approccio Cost-Sensitive}
+
+I multi-classificatori \emph{cost-sensitive} sono generalmente efficaci nel gestire dataset non bilanciati, come in questo caso;
+essi infatti consentono di attribuire un peso alle istanze sbagliate delle varie classi in gioco, eseguendo così una procedura di \emph{model tuning}.
+
+L'implementazione disponibile in Weka, chiamata \texttt{CostSensitiveClassifier},
+permette di selezionare un \emph{classificatore} (i cui parametri possono essere settati a piacere) su cui costruire un modello
+e una \emph{matrice di costo} di dimensione \(N×N\) (dove \(N\) è il numero di classi in gioco) con la quale è possibile assegnare una differente penalità alle istanze classificate per ogni classe.
+
+Il primo classificatore provato è stato \texttt{J48}, specificando vari valori nella matrice di costo (accrescendo sempre più la penalità dovuta all'errata classificazione delle classi con meno istanze quali ``\texttt{Indù}'' e ``\texttt{Altre}''):
+al crescere del peso, effettivamente queste classi risultavano favorite, ma questo andava a scapito della bontà complessiva della classificazione; infatti, le classi con maggior numero di istanze quali ``\texttt{Cattolica}'', ``\texttt{Cristiana non cattolica}'' o ``\texttt{Musulmaba}'', avevano rendimento sempre peggiore.
+
+Si è cercato dunque di bilanciare le penalità anche per queste classi più grandi, ottenendo, tuttavia, l'effetto contrario: le classi con poche istanze tornavano ad essere più deboli, e quindi mal classificate dal modello.
+Purtroppo, avendo un così elevato numero di classi, riuscire a bilanciare le penalità della \emph{cost matrix} risulta particolarmente complesso.
+
+Il valore che sembra garantire il migliore equilibrio, tra quelli trovati, è quello riportato in~\Cref{fig:cost:j48}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/MultiJ48.PNG}%
+  \caption{Output di \texttt{CostSensitiveClassifier} con \texttt{J48}}%
+  \label{fig:cost:j48}
+\end{figure}
+
+Utilizzando invece come classificatore base il \emph{Naïve Bayes}, i risultati migliorano leggermente rispetto al solo classificatore bayesiano, tuttavia le performance rimangono inferiori rispetto al modello costruito con \emph{J48} (anche se i valori di \emph{ROC} anche per le classi con poche istanze risultano migliori, a scapito di \emph{precision} e \emph{recall});
+probabilmente nonostante l'approccio \emph{cost-based} migliori l'efficacia del modello \texttt{NaiveBayes}, le problematiche espresse nella~\Cref{subsec:bayes} sono talmente importanti da non rendere il classificatore valido nemmeno così utilizzato.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/MultiBayes.PNG}%
+  \caption{Output di \texttt{CostSensitiveClassifier} con \emph{Naïve Bayes}}%
+  \label{fig:cost:j48}
+\end{figure}
+
+Infine è stato utilizzato come classificatore base \texttt{IBk}, che aveva garantito i risultati migliori finora.
+Applicando i modelli descritti nella~\Cref{subsec:ibk}, i risultati ottenuti non sono stati altrettanto validi:
+il miglior risultato in assoluto (\Cref{fig:cost:ibk5}) è stato ottenuto utilizzando \texttt{KNN=5}, \emph{distanza euclidea} e penalità per i record mal classificati simili a quelli utilizzati per l'algoritmo \emph{J48}.
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/kNNWeighted.PNG}%
+  \caption{Output di \texttt{CostSensitiveClassifier} con \texttt{IBk} con \texttt{KNN=5}}%
+  \label{fig:cost:ibk5}
+\end{figure}
+
+\subsubsection{Approccio Boosting}
+
+L'ultimo approccio tentato è stato il \emph{boosting}, processo che si basa sulla costruzione di più classificatori attribuendo ogni volta un peso maggiore agli elementi mal classificati al passo precedente.
+
+Come per i \emph{classificatori cost-based}, anche qui è possibile specificare un modello di base per costruire la classificazione:
+in modo analogo sono stati testati tutti i tre classificatori base impiegati ai passi precedenti nelle \Cref{subsec:tree,subsec:bayes,subsec:ibk},
+ottenendo i risultati migliori, anche se comunque complessivamente peggiori rispetto all'approccio con i \emph{classificatori cost-based}, con \texttt{NaiveBayes}.
+In \Cref{fig:adaboost:bayes} sono riportati i risultati ottenuti con \texttt{NaiveBayes} come classificatore base, e un numero di iterazioni pari a \(10\).
+
+\begin{figure}[H]
+  \centering
+  \includegraphics[width=0.75\textwidth]{fig/AdaboostBayes.PNG}%
+  \caption{Output di \texttt{AdaboostM1} con \texttt{NaiveBayes} e \(10\) iterazioni}%
+  \label{fig:adaboost:bayes}
+\end{figure}
+
+I risultati per questo modello non sono particolarmente buoni: per la classe ``\texttt{Altre (religioni ndr.)}'' risultano migliori i valori di \emph{precision} e \emph{recall} (anche se comunque ancora bassi),
+mentre per le classe con un maggior numero di istanze, questi valori risultano peggiori rispetto a quelli ottenuti con i \emph{classificatori cost-based}.
+
+\newpage
+
+\section{Conclusioni}
+
+\todo[shadow]{Until here ---------------}
+
+Lo studio di questo dataset è stato sicuramente molto interessante, per quanto fosse complicato da analizzare;
+partendo da risultati non ottimali, è stato necessario valutare bene la struttura stessa del dataset e il funzionamento dei classificatori
+interpretare i risultati di ciascuna prova.
+
+In primo luogo, si può affermare che i modelli basati sui \emph{classificatori Lazy} producono i risultati più solidi, sebbene ancora lontani da potersi definire efficienti.
+La ragione di tale solidità può essere attribuita alla maggiore resistenza del classificatore a uno sbilanciamento della frequenza delle classi nel dataset rispetto agli altri modelli impiegati.
+
+In secondo luogo, l'impiego di multi-classificatori, sia \emph{boosting} che \emph{cost-sensitive},
+ha permesso di migliorare ulteriormente le misure di bontà e la classificazione delle istanze della classe ``\texttt{O}'', che sarebbe poi quella più rilevante.
+Tra i due, si ritiene che non si abbia un modello migliore dell'altro, bensì che tutto dipenda dal contesto in cui vengono applicati:
+se ad esempio l'obiettivo è identificare il maggior numero di potenziali pazienti con problemi di sterilità, allora conviene utilizzare il modello \emph{cost-sensitive};
+al contrario se l'interesse primario è avere un sistema che sia il più vicino possibile alla realtà modellata dai dati, allora il modello basato su \emph{Adaboost} potrebbe essere la scelta migliore.
 
 \end{document}
