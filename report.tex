@@ -107,7 +107,7 @@
 
 Per la realizzazione dell'elaborato, si è scelto di condurre le operazioni di analisi e mining dei dati sul dataset chiamato \emph{Flags Data Set}\footnote{\url{http://archive.ics.uci.edu/ml/datasets/Flags}}, rimediato dal sito \emph{UCI Machine Learning}.
 In questa \nameCref{sec:intro} si procederà a presentare il dataset sul quale è stato svolto il lavoro.
-Si prenderà in considerazione dominio da qui il dataset proviene e la struttura dei dati in esso contenuti originariamente (prima di apportare eventuali pulizie, per poter essere in grado di estrarre conoscenza dai dati in questione)\todo[shadow]{Pulizie necessarie? Vedremo poi}.
+Si prenderà in considerazione dominio da qui il dataset proviene e la struttura dei dati in esso contenuti originariamente (prima di apportare eventuali pulizie, per poter essere in grado di estrarre conoscenza dai dati in questione).
 
 \subsection{Descrizione del dominio}\label{subsec:intro:descrdom}
 
@@ -162,7 +162,6 @@ Prima di descrivere i vari attributi, c'è da aggiungere che, all'interno della 
 
   \item[Area]
     Attributo numerico che rappresenta l'area della nazione, espressa in migliaia di kilometri quadrati.
-    \todo[shadow]{Aggiungere??}
 
   \item[Popolazione]
     Attributo numerico che rappresenta la popolazione della nazione, espressa in milioni di persone (valore arrotondato).
@@ -267,7 +266,7 @@ si deve infatti poter costruire un modello che, dati certi parametri per gli att
 
 \section{Preprocessing dei dati}
 
-In questa sezione vengono descritte le trasformazioni apportate ai dati,al fine di migliorarne la leggibilità, la trasparenza e la qualità.
+In questa sezione vengono descritte le trasformazioni apportate ai dati, al fine di migliorarne la leggibilità, la trasparenza e la qualità.
 Non è stato ritenuto necessario, innanzitutto, aggregare attributi, in quanto risultano tutti abbastanza eterogenei ed indipendenti, ad esclusione di quelli relativi ai colori;
 in merito a questi ultimi, è stato ritenuto interessante mantenere gli attributi relativi ad ogni colore, in quanto quest'ultima caratteristica potrebbe influenzare la deduzione finale.
 Si è ritenuto, inoltre, opportuno eliminare diversi attributi, a seguito di una approfondita analisi delle istanze e degli attributi stessi.
@@ -304,9 +303,6 @@ In questa fase si è controllato manualmente il dataset al fine di rilevare even
 Fortunatamente, questo check ha confermato le impressioni date dalla lettura della descrizione del dataset presente
 nel file \texttt{flags\_flag.names} già citato, ovvero che il dataset non necessitasse di alcun tipo di pulizia, in quanto
 non sono stati riscontrati record duplicati o mancanti.
-
-\subsection{Normalizzazione}
-\todo[shadow]{Normalizzazione fatta?}
 
 \section{Analisi dei dati e classificatori utilizzati}
 
@@ -347,7 +343,7 @@ altra informazione interessante riguarda la fede marxista, presente quasi esclus
   \caption{%
     L'istogramma rappresenta i valori assunti dall'attributo \textbf{Continente}
     all'interno del dataset: le colonne, nell'ordine rappresentano i 6 continenti, rispettivamente,
-    Nord America, Sud America, Europa, Africa, Asia ed Oceania.
+    Nord America, Sud America, Europa, Africa, Asia e Oceania.
     }%
   \label{fig:landmass}
 \end{figure}
@@ -675,6 +671,16 @@ mentre per le classe con un maggior numero di istanze, questi valori risultano p
 
 \section{Conclusioni}
 
-\todo[shadow]{Until here ---------------}
+Lo studio di questo dataset è stato sicuramente molto interessante, per quanto fosse complicato da analizzare;
+partendo da risultati non ottimali, è stato necessario valutare bene la struttura stessa del dataset e il funzionamento
+dei classificatori per interpretare i risultati di ciascuna prova.
+
+In primo luogo, si può affermare che i modelli basati sui \emph{classificatori Lazy} (in particolare \textbf{pesando} le distanze tra i punti) producono i risultati più solidi,
+sebbene ancora lontani da potersi definire ottimali.
+La ragione di tale solidità può essere attribuita alla maggiore resistenza del classificatore a uno sbilanciamento della frequenza delle classi nel dataset rispetto agli altri modelli impiegati.
+
+In generale, si ritiene non ci sia un modello che possa essere considerato particolarmente di successo.
+Purtroppo, questo può essere causato dalla scelta della classe da esaminare, estremamente sbilanciata nella sua frequenza all'interno del dataset;
+si è, tuttavia, ritenuto potesse essere interessante analizzare il dataset sotto questa lente e, nel complesso, ci si può ritenere abbastanza soddisfatti.
 
 \end{document}
